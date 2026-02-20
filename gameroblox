@@ -1,0 +1,848 @@
+Hi Jack,
+
+Below is a complete text-format scope you can price. It includes my previous requirements + the missing details you said were needed, written in player-steps + exact UI + rules + concrete numbers (MVP values where needed). If anything is still unclear, please point to the specific section/line.
+
+========================
+0) HIGH CONCEPT (PROJECT)
+=========================
+
+Roblox co-op survival/horror (1–8 players) where a team rides an armored train through a dark archipelago route (multiple stations). The most dangerous part is TRAVEL. During travel, a unique boss monster spawns cyclically and attacks players + the train/cars. Players must survive each travel segment, reach stations, earn currencies, buy/upgrade weapons, and place equipped railcars onto sockets before each round. Round ends on win/lose with summary + rewards.
+
+Camera: 3rd person default, optional 1st person toggle.
+Movement: walk, sprint with stamina, jump. (MVP: no climbing.)
+
+========================
+
+1. ALWAYS-VISIBLE HUD + RIGHT MENU (MATCHING SCREENSHOTS)
+   ========================
+   Visible during Lobby + Stations + Travel.
+
+1.1 Bottom-right stacked bars (with number on each bar):
+
+* Tickets (green bar + numeric)
+* Bonds/Tokens (yellow bar + numeric)
+* HP (red bar + numeric)
+* Stamina (blue bar + numeric)
+
+1.2 Right-side vertical menu (anchored mid-right), big rectangular buttons:
+STORE
+BOUNTIES
+CRAFTING (NEW — directly under STORE)
+CODES
+INVENTORY
+REPORT
+
+Rules:
+
+* Clicking any button opens a centered panel with blurred background.
+* Panel has a red “X” close button (top-right of panel).
+* Only ONE panel open at a time (opening a new one closes previous).
+
+1.3 Top-center banner timer:
+
+* Lobby/Station: “WAITING FOR DEPARTURE 00:XX”
+* Travel: “TRAVELING” + segment timer (countdown)
+
+1.4 Top-right player list panel (People / Journeys)
+(MVP: default Roblox player list is okay; optional custom list later.)
+
+========================
+2) ROUND START SEQUENCE (ROUTE GUI → PLACEMENT GUI)
+===================================================
+
+2.1 Route / Journey Voting GUI (map board style)
+When:
+
+* At the start of EVERY round, BEFORE placement.
+
+Behavior:
+
+* Auto-opens for all players.
+* Visible countdown: 12 seconds.
+* Route GUI has priority layer (players cannot open other menus while it’s active).
+
+What it shows:
+
+* White “board” map UI.
+* Two route options:
+  Route B → Station B
+  Route C → Station C
+  Each option shows:
+* Destination name
+* Difficulty color: Green/Yellow/Red
+* Reward icons: weapon chance, railcar chance
+* Side legend: rarity chances (Common → Legendary) for weapons and railcars.
+
+How player votes (step-by-step):
+
+1. Player clicks the Route B area (or VOTE button next to it).
+2. The chosen route highlights + shows “VOTED”.
+3. Player can change vote until timer ends.
+4. Timer ends → server picks majority vote (ties: random).
+5. “Route Selected: Station __” shows 1.5 seconds.
+6. Route GUI closes automatically.
+
+2.2 Placement GUI timing
+
+* After Route GUI closes: wait 1 second, then auto-open PLACEMENT GUI.
+
+========================
+3) INVENTORY UI (TABS) + EQUIP RULES
+====================================
+
+Open:
+
+* Player clicks INVENTORY button.
+
+Layout:
+
+* Center panel with top tabs:
+  WEAPONS | RAILCARS | TITLES | MEDICAL
+
+3.1 WEAPONS tab
+
+* Grid of weapon cards (image + name).
+* Equipped weapons show “EQUIPPED” label (green strip on the card).
+
+Equip behavior (MVP):
+
+* Clicking a weapon card equips automatically:
+
+  * If weapon is Primary-class → equips to Primary slot.
+  * If Secondary-class → equips to Secondary slot.
+* If player clicks an unowned weapon → toast “Not owned”.
+
+Primary/Secondary slots are shown near top-right of the panel with current equipped icons.
+
+3.2 RAILCARS tab (2-slot system)
+
+* Grid of railcar cards.
+* Two equip slots visible: SlotA and SlotB (two boxes on the right side).
+  Step-by-step:
+
+1. Player clicks a railcar card.
+2. Right-side details panel shows stats (HP/Armor/Mass/Role/Cost).
+3. Player clicks “Equip SlotA” or “Equip SlotB”.
+   Rules:
+
+* SlotA and SlotB must be different railcars (no duplicates).
+* Equipping a new car replaces the old in that slot.
+* If not owned → toast “Not owned”.
+
+========================
+4) PLACEMENT GUI (AUTO-OPENS AFTER ROUTE VOTE)
+==============================================
+
+Look:
+
+* Large panel (or full-screen) showing top-down train with 8 sockets labeled Socket 1–8.
+* Left side shows SlotA and SlotB as selectable panels (and/or draggable cards).
+* Bottom has “CONFIRM” button and a countdown timer.
+
+Step-by-step placement:
+
+1. Player clicks SlotA (it highlights).
+2. Player clicks a socket (1–8) → assigns SlotA to that socket (shows car icon on socket).
+3. Player clicks SlotB → clicks a DIFFERENT socket → assigns SlotB.
+4. Player clicks CONFIRM.
+5. UI shows “Waiting for server…”
+6. If accepted → UI locks and shows “PLACED”.
+7. If rejected → UI shows exact error text.
+
+Hard validation messages (exact):
+
+* “Invalid socket.”
+* “SlotA and SlotB cannot use the same socket.”
+* “You do not own this railcar.”
+* “This railcar is not equipped in that slot.”
+* “This railcar limit is reached (Heavy Turret max 1).”
+* “Placement is closed.”
+
+Timing:
+
+* Placement phase lasts 25 seconds.
+* If player does not confirm by timeout:
+
+  * Server auto-places SlotA to first free socket, SlotB to next free socket.
+  * If only one railcar equipped, only SlotA placed.
+
+Server validation (must be enforced):
+
+* Ownership: player must own the railcar.
+* Slot validity: SlotA request must match equipped SlotA car, same for SlotB.
+* Socket conflict: cannot place two cars in same socket.
+* Socket rules: certain sockets can be restricted (MVP: all accept all cars).
+* Limits: see Section 8 (railcar limits).
+
+========================
+5) STORE + BOUNTIES + CODES + CRAFTING (MATCHING SCREENSHOTS)
+=============================================================
+
+5.1 STORE
+
+* Opens shop window with tabs:
+  Weapons | Railcars | Titles | Medical
+* Each item card shows:
+  Name, rarity color, price (Tickets or Tokens), and “BUY” button.
+* Clicking BUY opens confirm popup:
+  “Buy __ for __ Tickets?” [CONFIRM] [CANCEL]
+* On success: toast “Purchased!” and item appears in Inventory.
+
+5.2 BOUNTIES
+
+* Panel shows list of bounties with progress bars (X/Y).
+* Top shows refresh timer: “REFRESH IN 05:23:13”.
+* Completing a bounty grants Tickets and sometimes Tokens.
+  (MVP bounty examples)
+
+1. “Repair 600 Train HP” → +250 Tickets
+2. “Deal 2,000 Boss Damage” → +300 Tickets +1 Token (20% chance)
+3. “Revive 2 Players” → +200 Tickets
+4. “Open 3 Crates” → +220 Tickets
+
+5.3 CODES
+
+* Small panel with:
+  Text input “ENTER CODE”
+  Button “SUBMIT”
+  Behavior:
+* Invalid → “Invalid code”
+* Already redeemed → “Already redeemed”
+* Valid → grant reward and show “Redeemed!”
+  Design note: I am NOT providing real codes. Code list is developer-defined.
+  (MVP code reward types)
+* Tickets pack
+* Tokens pack
+* One random crate
+
+5.4 CRAFTING (Custom Wagon)
+Open:
+
+* Click CRAFTING button under STORE.
+
+UI layout:
+Left: Material list (click to select)
+Middle: Module list with checkboxes
+Right: Computed stats and limits
+Bottom: Total cost + “CRAFT” button
+
+Materials (MVP):
+
+* Wood (light, cheap)
+* Steel (balanced)
+* Composite (mid)
+* Titanium (heavy, expensive)
+* Scrap Alloy (randomized resist)
+
+Modules (pick up to 4) (MVP):
+
+* Storage Rack
+* Turret Mount
+* Medbay Kit
+* Armor Plating
+* Radar Dish
+* Battery Pack
+* Coolant System
+* Decoy Projector
+
+Limits (server-validated):
+
+* Module count ≤ 4
+* Weight ≤ 100
+* Power usage ≤ 100
+* Must have enough Tickets/Tokens
+
+Click CRAFT:
+
+* Server validates owned materials/modules and currencies.
+* On success: crafted wagon added to Inventory → Railcars tab instantly.
+
+========================
+6) CORE ROUND FLOW (PLAYER PERSPECTIVE)
+=======================================
+
+Round = multiple Travel Segments with Stations between.
+MVP structure:
+
+* 3 Travel Segments (each 180 seconds)
+* 2 Stations (each stop 60 seconds)
+* Final Segment ends in “Extraction Gate” (win if gate reached with engine alive)
+
+Sequence:
+
+1. Lobby: players equip weapons + railcars, can craft, shop, redeem codes.
+2. Route Vote UI (12s) → server selects route with difficulty modifiers.
+3. Placement UI (25s) → server mounts each player’s SlotA/SlotB onto train sockets.
+4. Travel Segment starts (180s):
+
+   * Random travel events happen.
+   * Boss can spawn (scheduler below).
+   * Players fight, repair, manage ammo/med.
+5. Station Stop (60s):
+
+   * Players can loot crates, shop, craft, repair quickly.
+6. Repeat until final segment ends.
+7. End Screen:
+
+   * Win/Lose, stats, rewards.
+
+Win conditions (MVP):
+
+* Train engine HP > 0 when final segment timer ends (“Extraction reached”)
+
+Lose conditions (MVP):
+
+* Engine HP reaches 0
+  OR
+* Entire team dead at same time for 15 seconds (no active players)
+
+========================
+7) TRAVEL SEGMENTS — EVENTS, RESOURCES, REPAIRS
+===============================================
+
+7.1 Segment length:
+
+* Each travel segment: 180 seconds.
+* Boss attack windows can occur during travel.
+
+7.2 Resources (train-level shared):
+
+* Scrap: used for repairs and ammo fabrication.
+* Fuel: (MVP) cosmetic only OR optional speed impact. (If used: speed -25% when fuel is 0.)
+* Ammo Crates: can be found and stored.
+* Med Crates: can be found and stored.
+
+(MVP starting amounts per round)
+
+* Scrap: 120
+* Fuel: 100
+* Ammo crates: 2
+* Med crates: 2
+
+7.3 Repair system (player steps)
+
+* Players can repair Train Engine or any Railcar by holding “E” with a Repair Tool equipped.
+* Repair consumes Scrap.
+* Repair is interrupted if player takes damage or moves away.
+
+Repair values (MVP):
+
+* Repair rate: 20 HP per second
+* Scrap cost: 1 Scrap per 10 HP repaired
+* Repair Tool has no durability (MVP)
+
+Damage states (MVP):
+
+* Normal
+* Damaged (<50% HP): sparks + smoke + minor functionality penalty
+* Critical (<20% HP): heavy smoke + functionality reduced more
+* Destroyed (0 HP): car disabled; if engine destroyed = lose
+
+7.4 Travel events (6 events, exact)
+Event 1: “Fog Sirens”
+
+* Trigger: random once per segment
+* Effect: visibility reduced for 25s, radar accuracy -50%
+* Player action: none (survive)
+
+Event 2: “Boarders”
+
+* Trigger: random
+* Spawns 6–12 small enemies on train sides over 20s
+* Player action: kill them; each reaching engine deals 30 damage
+
+Event 3: “Bridge Collapse”
+
+* Trigger: rare
+* Warning: alarm + red arrows for 3s
+* Effect: one random railcar takes 200 damage unless repaired to full within 10s (emergency repair)
+* Player action: repair that car fast to prevent the hit
+
+Event 4: “Ammo Cache”
+
+* Trigger: random
+* Spawns a crate on a random railcar
+* Player action: hold E for 5s to open; grants +1 ammo crate (shared)
+
+Event 5: “Medical Cache”
+
+* Trigger: random
+* Player opens 5s; grants +1 med crate (shared)
+
+Event 6: “Storm Surge”
+
+* Trigger: random
+* Train takes 10 engine damage every 5s for 30s unless players activate 2 “grounding switches” (two sockets highlight)
+* Player action: two players must hold E on two switches simultaneously for 4s to cancel the storm
+
+========================
+8) RAILCARS — TYPES, STATS, INTERACTIONS, LIMITS (10+)
+======================================================
+
+General rules:
+
+* Each player can equip 2 railcars (SlotA, SlotB).
+* During placement, those equipped cars can be mounted on sockets.
+* Cars have HP/Armor/Mass; Mass affects train speed.
+
+Train base:
+
+* Base speed multiplier starts at 1.00
+* Each total Mass 100 reduces speed by 2% (MVP)
+  Example: total mass 300 → speed multiplier 0.94
+
+8.1 Car list (MVP stats)
+
+1. Light Turret Car
+
+* Role: automatic turret vs boss/boarders
+* HP 600, Armor 20%, Mass 80
+* Cost: 900 Tickets
+* Interaction: E to reload turret (3s) using Ammo Crate
+* Limit: max 2 Light Turret Cars per train
+
+2. Heavy Turret Car
+
+* Role: slow, high damage turret
+* HP 900, Armor 30%, Mass 140
+* Cost: 1,600 Tickets + 2 Tokens
+* Interaction: E to reload (4s) using Ammo Crate
+* Limit: max 1 Heavy Turret Car per train
+
+3. Medbay Car
+
+* Role: heals players
+* HP 700, Armor 15%, Mass 90
+* Cost: 1,200 Tickets
+* Interaction: E to heal self or ally for 35 HP (2s), consumes 1 Med Charge
+* Med Charges refill at Stations or via Med Crate
+* Limit: max 1 Medbay per train
+
+4. Storage Car
+
+* Role: increases shared storage capacity
+* HP 650, Armor 10%, Mass 70
+* Cost: 800 Tickets
+* Passive: +100 Scrap cap, +1 Ammo crate cap, +1 Med crate cap
+* Limit: max 2 Storage
+
+5. Radar Car
+
+* Role: early warning + weakspot reveal
+* HP 550, Armor 10%, Mass 60
+* Cost: 900 Tickets
+* Passive: boss spawn warning + highlights weakspot during windows
+* Limit: max 1 Radar
+
+6. Armor Plating Car
+
+* Role: adds train armor buff
+* HP 1000, Armor 40%, Mass 160
+* Cost: 1,400 Tickets
+* Passive: engine takes 10% less damage while this car is alive
+* Limit: max 2 Armor
+
+7. Ammo Fabricator Car
+
+* Role: converts Scrap → Ammo Crate
+* HP 650, Armor 15%, Mass 110
+* Cost: 1,000 Tickets + 1 Token
+* Interaction: E to craft ammo (6s). Cost: 25 Scrap → +1 Ammo Crate
+* Limit: max 1 Ammo Fab
+
+8. Shield Pylon Car
+
+* Role: temporary shield against boss burst
+* HP 700, Armor 20%, Mass 120
+* Cost: 1,300 Tickets + 2 Tokens
+* Interaction: E to activate shield for 10s (cooldown 45s)
+* Shield effect: reduces engine+cars damage by 35% for 10s
+* Limit: max 1 Shield
+
+9. Repair Drone Bay
+
+* Role: auto-repairs nearest damaged module
+* HP 650, Armor 15%, Mass 100
+* Cost: 1,250 Tickets
+* Passive: repairs 5 HP/s to the most damaged car within 2 sockets
+* Limit: max 1 Drone Bay
+
+10. Decoy/Lure Car
+
+* Role: pulls boss aggro briefly
+* HP 500, Armor 10%, Mass 80
+* Cost: 850 Tickets
+* Interaction: E to deploy decoy for 8s (cooldown 40s)
+* Effect: boss prioritizes decoy car if alive
+* Limit: max 1 Decoy
+
+11. Scout Platform
+
+* Role: mobility/vision advantage
+* HP 450, Armor 5%, Mass 50
+* Cost: 700 Tickets
+* Passive: players on this car gain +10% sprint speed and +15% boss damage
+* Limit: max 1 Scout
+
+========================
+9) WEAPONS (6) — STATS + AMMO
+=============================
+
+Player HP: 100
+Stamina: 100
+Sprint drain: 14 stamina/sec
+Sprint regen: 10 stamina/sec after 1s delay
+Jump cost: 6 stamina
+
+All weapons are hitscan raycast (server authoritative).
+Headshots: yes (1.5x) for guns, no for repair tool/med injector.
+Damage falloff: yes for SMG and shotgun.
+
+Weapons:
+
+1. SMG (Primary)
+
+* Damage: 9
+* Fire rate: 12 rps (720 rpm)
+* Mag: 30
+* Reserve: 180
+* Reload: 2.0s
+* Falloff: starts 60 studs → ends 160 studs (down to 70%)
+
+2. Assault Rifle (Primary)
+
+* Damage: 14
+* Fire rate: 8 rps (480 rpm)
+* Mag: 25
+* Reserve: 150
+* Reload: 2.2s
+* Falloff: starts 80 → ends 220 (down to 80%)
+
+3. Shotgun (Primary)
+
+* Pellets: 8
+* Damage per pellet: 7 (max 56)
+* Fire rate: 1.2 rps
+* Mag: 6
+* Reserve: 36
+* Reload: 0.8s per shell (tube reload)
+* Effective range: 15–80 studs
+
+4. Pistol (Secondary)
+
+* Damage: 12
+* Fire rate: 4 rps
+* Mag: 15
+* Reserve: 90
+* Reload: 1.6s
+
+5. Flare Gun (Secondary / Utility)
+
+* Damage: 5 direct + “Marked” debuff
+* Fire rate: 0.8 rps
+* Mag: 1
+* Reserve: 8
+* Reload: 2.0s
+* Effect: marks boss weakspot for +10% team damage for 8s (cooldown 20s)
+
+6. Repair Tool (Tool)
+
+* Not a gun.
+* Hold E on train/cars to repair (see repair section).
+* Also can “unjam” turret: hold E 2s to restore turret function if disabled.
+
+7. Med Injector (Tool) (counts under Medical tab)
+
+* Use on self: 1.2s animation → heal 35 HP
+* Use on ally: 1.5s animation → heal 35 HP
+* Charges: 3 per injector, refill at stations or via Med Crate
+
+Ammo system:
+
+* Ammo is split: magazine + reserve.
+* Ammo crates refill reserve to max for one weapon (player chooses in UI prompt) OR refill a turret depending on interaction.
+
+========================
+10) BOSS AI SPEC (UNIQUE BOSS)
+==============================
+
+Boss Name: “The Brine Warden”
+Theme/look: huge barnacle-armored sea-horror with glowing lantern organs, long hooked limbs. It climbs onto the train, rips plates, and tries to disable key cars.
+
+Server authoritative:
+
+* Boss decisions, damage, and phase logic run on server.
+* Clients only receive replicated state/FX (animations, telegraphs, VFX).
+
+10.1 Spawn scheduler (during Travel only)
+
+* Boss can spawn starting 45 seconds into each travel segment.
+* After eligible, spawn checks every 35 seconds with 60% chance.
+* Max 1 boss at a time.
+* If boss is alive when segment ends, it retreats automatically.
+
+10.2 Phases
+
+* Phase 1 Normal: HP 100% → 70%
+* Phase 2 Enraged: 70% → 35% (attack cooldowns -20%, movement +10%)
+* Phase 3 Critical: 35% → 0% (attack cooldowns -35%, adds a new attack)
+
+Boss HP (MVP):
+
+* Scales with players:
+  Base HP 8,000 (1 player)
+  +2,000 per additional player
+  Example: 4 players = 14,000 HP; 8 players = 22,000 HP
+
+10.3 Target priorities
+Boss chooses a target every 3 seconds:
+
+1. If any Heavy Turret exists and is alive: target Heavy Turret car
+2. Else if any Shield Pylon exists and is alive: target Shield car
+3. Else if any player is on exterior/tops: target nearest player
+4. Else target Engine
+
+10.4 Weakspot / teamwork windows
+Weakspot: “Lantern Core” on its chest.
+How it opens:
+
+* After boss finishes “Anchor Slam” or “Hull Bite”, it exposes core for 6 seconds.
+  Damage multiplier during window: 1.8x.
+  Radar Car highlights the core during windows.
+  Flare Gun adds +10% team damage for 8s (does not stack, refreshes).
+
+10.5 Attacks (telegraphs, cooldowns, ranges, damage)
+A) Anchor Slam (AOE)
+
+* Telegraph: boss raises arm + ground marker 1.2s
+* Range: 18 studs from impact point
+* Cooldown: 10s (Normal), 8s (Enraged), 7s (Critical)
+* Damage: 28 to players, 180 to cars in radius
+* Weakspot opens after attack for 6s
+
+B) Hull Bite (module damage)
+
+* Telegraph: head pulls back 0.9s + screech
+* Range: targets a car socket within 1 socket distance
+* Cooldown: 14s / 12s / 10s
+* Damage: 320 to targeted car + applies “Bleed” to engine (engine takes +10 dmg every 2s for 10s unless repaired)
+* Weakspot opens after attack for 6s
+
+C) Harpoon Grab (single target pull)
+
+* Telegraph: glowing line 0.7s
+* Range: 90 studs line
+* Cooldown: 16s / 14s / 12s
+* Effect: grabs 1 player, drags them 20 studs, deals 20 dmg, applies 2s slow
+* Counterplay: teammates shoot harpoon (300 damage to break)
+
+D) Barnacle Spit (area denial)
+
+* Telegraph: spits green puddle arc indicator 1.0s
+* Range: 60 studs
+* Cooldown: 12s / 10s / 9s
+* Damage: 6 dmg/sec for 6s if standing in puddle
+* Also reduces repair speed by 40% while inside puddle
+
+E) Rending Rush (train run + player chase)
+
+* Telegraph: roar 1.5s (long telegraph)
+* Duration: 6s
+* Cooldown: 22s / 18s / 16s
+* Effect: boss charges across 2–4 sockets, swiping:
+
+  * Players hit: 22 dmg + knockback
+  * Cars hit: 140 dmg
+
+F) (Critical only) Lantern Burst
+
+* Telegraph: core glows 2.0s + alarm sound
+* Cooldown: 28s (Critical only)
+* Effect: radial blast 25 studs:
+
+  * Players: 35 dmg + “Burn” 5 dmg/sec for 4s
+  * Cars: 220 dmg
+* Counterplay: Shield Pylon reduces it; players can hide behind intact Armor car (MVP: simple LOS check optional)
+
+========================
+11) DIFFICULTY SCALING (1–8 PLAYERS)
+====================================
+
+* Boss HP scaling above.
+* Enemy boarders count scales:
+  Base 6 + (players * 2) up to max 22.
+* Scrap rewards scale slightly: +10% per extra player (MVP).
+* Train engine HP fixed (see below) to keep teamwork focused.
+
+========================
+12) BALANCE TABLES (MVP VALUES)
+===============================
+
+12.1 Health
+
+* Player HP: 100
+* Train Engine HP: 5,000
+* Base Train Body HP (non-engine): 2,000
+* Car HP listed per car above
+
+12.2 Boss (summary)
+
+* HP: 8,000 + 2,000*(players on the server)
+* Anchor Slam: 28 player / 180 car; cooldown 10/8/7
+* Hull Bite: 320 car + bleed; cooldown 14/12/10
+* Harpoon Grab: 20 + slow; cooldown 16/14/12
+* Barnacle Spit: 6/sec for 6s; cooldown 12/10/9
+* Rending Rush: 22 player / 140 car; cooldown 22/18/16
+* Lantern Burst (critical): 35 player / 220 car; cooldown 28
+
+12.3 Weapons (summary)
+
+* SMG: 9 dmg; 12 rps; 30 mag; 2.0s reload; 180 reserve
+* AR: 14 dmg; 8 rps; 25 mag; 2.2s reload; 150 reserve
+* Shotgun: 8x7; 1.2 rps; 6 mag; 0.8s per shell; 36 reserve
+* Pistol: 12 dmg; 4 rps; 15 mag; 1.6s reload; 90 reserve
+* Flare: mark +10% team dmg 8s; cd 20s; 8 reserve
+* Med Injector: heal 35; 3 charges
+* Repair tool: 20 HP/s; 1 scrap per 10 HP
+
+if you want add more weapons but other wise i can just add them by myself
+
+12.4 Prices (MVP)
+Weapons:
+
+* SMG: 700 Tickets
+* AR: 900 Tickets
+* Shotgun: 1,000 Tickets
+* Pistol: 400 Tickets
+* Flare gun: 600 Tickets + 1 Token
+  Tools/Medical:
+* Med Injector: 250 Tickets
+* Repair Tool: 300 Tickets
+  Railcars:
+* Scout: 700 Tickets
+* Storage: 800 Tickets
+* Light Turret: 900 Tickets
+* Radar: 900 Tickets
+* Ammo Fab: 1,000 Tickets + 1 Token
+* Medbay: 1,200 Tickets
+* Repair Drone: 1,250 Tickets
+* Shield: 1,300 Tickets + 2 Tokens
+* Armor: 1,400 Tickets
+* Heavy Turret: 1,600 Tickets + 2 Tokens
+  Repairs:
+* Car repair cost: 1 Scrap per 10 HP (player repair)
+* Station “instant repair” option (MVP): 150 Tickets to restore one car to full
+
+Crafting (Custom Wagon):
+
+* Materials cost:
+  Wood: 400 Tickets
+  Steel: 650 Tickets
+  Composite: 900 Tickets + 1 Token
+  Titanium: 1,200 Tickets + 2 Tokens
+  Scrap Alloy: 500 Tickets (stats slightly random)
+* Modules cost each:
+  Storage Rack: 200 Tickets
+  Turret Mount: 300 Tickets + 1 Token
+  Medbay Kit: 250 Tickets
+  Armor Plates: 250 Tickets
+  Radar Dish: 200 Tickets
+  Battery Pack: 220 Tickets
+  Coolant: 220 Tickets
+  Decoy: 280 Tickets
+
+12.5 Loot crates (MVP drop rates)
+Crate opening time: 6 seconds (hold E); interrupted if taking damage.
+Crate types: Station Crate, Travel Cache
+Station Crate (per station: 4 crates total):
+
+* Tickets: 70% (150–250)
+* Scrap: 60% (20–40)
+* Ammo crate: 35% (1)
+* Med crate: 25% (1)
+* Weapon (random): 12% (rarity weighted)
+* Railcar (random): 6% (rarity weighted)
+* Token: 8% (1)
+  Travel Cache (event-based):
+* Ammo crate: 50%
+* Med crate: 35%
+* Scrap: 60% (10–25)
+* Token: 4%
+
+Rarity weights (weapons/railcars in crates):
+
+* Common 60%
+* Rare 25%
+* Epic 12%
+* Legendary 3%
+
+12.6 Timings
+
+* Route vote: 12s
+* Placement: 25s
+* Station stop: 60s
+* Travel segment: 180s
+* Boss eligibility starts: 45s into travel
+* Spawn check every 35s with 60% chance
+* Decoy duration: 8s; cd 40s
+* Shield duration: 10s; cd 45s
+
+========================
+13) REWARDS + CONTRIBUTION + ANTI-AFK
+=====================================
+
+Currencies:
+
+* Tickets (common)
+* Tokens/Bonds (rare)
+
+Rewards (MVP):
+
+* Segment survived: +250 Tickets
+* Station arrival: +200 Tickets
+* Final win: +600 Tickets + 2 Tokens
+
+Contribution scoring (server-calculated):
+
+* Boss damage: +1 score per 10 damage dealt
+* Repairs: +1 score per 15 HP repaired
+* Revive: +60 score each revive
+* Support (Medbay heal or injector used on ally): +15 score
+
+Anti-AFK minimum (per segment):
+
+* To receive segment reward, player must earn at least 80 contribution score in that segment
+  OR be alive and within train bounds for 70% of segment time (MVP fallback).
+  If not met: player gets 0 segment reward and a toast “No reward (inactive)”.
+
+========================
+14) REPORT BUTTON (MVP)
+=======================
+
+* Opens a simple panel with:
+  “Report Player” dropdown + reason dropdown + SUBMIT.
+  (MVP can be a placeholder UI only.)
+
+========================
+15) TECH REQUIREMENTS (FOR IMPLEMENTATION)
+==========================================
+
+* Server authoritative for: boss AI, damage, placement validation, crafting validation, rewards.
+* Client handles: UI, animations, camera, local effects.
+* Remotes must have rate limits/throttles (basic anti-spam).
+* No external assets required (placeholder models/UI ok).
+
+========================
+16) WHAT I EXPECT DELIVERED
+===========================
+
+A) Full game prototype playable in Roblox Studio:
+
+* Lobby → vote → placement → travel/stations loop → boss fights → end screen.
+  B) All above UIs working.
+  C) Server validation for ownership, placement, crafting, rewards.
+
+That’s the full scope I’m requesting for your quote.
+
+And add some gamepasses, i will just change the ids, 2x tickets, railcars for gamepass, you can decide.
+
